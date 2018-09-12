@@ -1,5 +1,48 @@
 # Production Docker deployment for Mattermost
 
+Forked from the official repo: https://github.com/mattermost/mattermost-docker.
+
+## Fork changes
+- Add Docker Secret handling by supporting declarazion of Docker Secret in docker-compose file (ex: `{DOCKER-SECRET:mysql_mattermost_db_pwd}`), full example:
+```
+---
+version: "3.2"
+services:
+  mattermost:
+    image: "uschti/mattermost-prod-app"
+    restart: always
+    deploy:
+      mode: global
+    ports:
+      - "8000:8000"
+    secrets:
+     - mysql_mattermost_db_pwd
+    environment:
+      - MM_USERNAME=mattermost
+      - MM_PASSWORD={DOCKER-SECRET:mysql_mattermost_db_pwd}
+      - MM_DBNAME=mattermost
+      - DB_HOST=DB
+      - DB_PORT_NUMBER=3306
+      - MM_SQLSETTINGS_DRIVERNAME=mysql
+    volumes:
+      - /mattermost/config:/mattermost/config:rw
+      - /mattermost/data:/mattermost/data:rw
+      - /mattermost/logs:/mattermost/logs:rw
+      - /mattermost/plugins:/mattermost/plugins:rw
+    networks:
+      - mattermost
+
+networks:
+  mattermost:
+
+secrets:
+  mysql_mattermost_db_pwd:
+    external: true
+```
+
+- Simplyfied the MySQL usage, don't need anymore to override the `MM_SQLSETTINGS_DATASOURCE` variable in docker-compose file.
+
+## Description
 This project enables deployment of a Mattermost server in a multi-node production configuration using Docker.
 
 Notes:
@@ -68,7 +111,6 @@ If you use a Mattermost configuration file on a different location than the defa
 If you choose to use MySQL instead of PostgreSQL, you should set a different datasource and SQL driver :
 * `DB_PORT_NUMBER` : `3306`
 * `MM_SQLSETTINGS_DRIVERNAME` : `mysql`
-* `MM_SQLSETTINGS_DATASOURCE` : `MM_USERNAME:MM_PASSWORD@tcp(DB_HOST:DB_PORT_NUMBER)/MM_DBNAME?charset=utf8mb4,utf8&readTimeout=30s&writeTimeout=30s`
 Don't forget to replace all entries (beginning by `MM_` and `DB_`) in `MM_SQLSETTINGS_DATASOURCE` with the real variables values.
 
 If you want to push Mattermost application to **Cloud Foundry**, use a `manifest.yml` like this one (with external PostgreSQL service):
