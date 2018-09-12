@@ -5,6 +5,13 @@ generate_salt() {
   cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 48 | head -n 1
 }
 
+if [ "${1:0:1}" = '-' ]; then
+    set -- mattermost "$@"
+fi
+
+echo "Expanding Docker Secrets"
+source /mattermost/env_secrets_expand.sh
+
 # Read environment variables or set default values
 DB_HOST=${DB_HOST:-db}
 DB_PORT_NUMBER=${DB_PORT_NUMBER:-5432}
@@ -12,10 +19,6 @@ MM_USERNAME=${MM_USERNAME:-mmuser}
 MM_PASSWORD=${MM_PASSWORD:-mmuser_password}
 MM_DBNAME=${MM_DBNAME:-mattermost}
 MM_CONFIG=${MM_CONFIG:-/mattermost/config/config.json}
-
-if [ "${1:0:1}" = '-' ]; then
-    set -- mattermost "$@"
-fi
 
 if [ "$1" = 'mattermost' ]; then
   # Check CLI args for a -config option
@@ -59,9 +62,19 @@ if [ "$1" = 'mattermost' ]; then
   if [ -z "$MM_SQLSETTINGS_DATASOURCE" ]
   then
     echo -ne "Configure database connection..."
+
     # URLEncode the password, allowing for special characters
     ENCODED_PASSWORD=$(printf %s $MM_PASSWORD | jq -s -R -r @uri)
-    export MM_SQLSETTINGS_DATASOURCE="postgres://$MM_USERNAME:$ENCODED_PASSWORD@$DB_HOST:$DB_PORT_NUMBER/$MM_DBNAME?sslmode=disable&connect_timeout=10"
+
+    if [ "$MM_SQLSETTINGS_DRIVERNAME" = "mysql" ]
+    then
+      echo "Using MySQL Database"
+      export MM_SQLSETTINGS_DATASOURCE="$MM_USERNAME:$MM_PASSWORD@tcp($DB_HOST:$DB_PORT_NUMBER)/$MM_DBNAME?charset=utf8mb4,utf8&readTimeout=30s&writeTimeout=30s"
+    else
+      echo "Using Postgres Database"
+      export MM_SQLSETTINGS_DATASOURCE="postgres://$MM_USERNAME:$ENCODED_PASSWORD@$DB_HOST:$DB_PORT_NUMBER/$MM_DBNAME?sslmode=disable&connect_timeout=10"
+    fi
+
     echo OK
   else
     echo "Using existing database connection"

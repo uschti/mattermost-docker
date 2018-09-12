@@ -1,4 +1,5 @@
 FROM alpine:3.8
+MAINTAINER Andrea Pellegrini <uschti@gmail.com>
 
 # Some ENV variables
 ENV PATH="/mattermost/bin:${PATH}"
@@ -32,6 +33,10 @@ RUN mkdir -p /mattermost/data \
     && addgroup -g ${PGID} mattermost \
     && adduser -D -u ${PUID} -G mattermost -h /mattermost -D mattermost \
     && chown -R mattermost:mattermost /mattermost /config.json.save
+
+# Copy Docker secret expand script
+ADD ./env_secrets_expand.sh /mattermost/env_secrets_expand.sh
+RUN chown mattermost:mattermost /mattermost/env_secrets_expand.sh && chmod +x /mattermost/env_secrets_expand.sh
 
 USER mattermost
 
