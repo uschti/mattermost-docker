@@ -2,8 +2,6 @@
 
 This project enables deployment of a Mattermost server in a multi-node production configuration using Docker.
 
-[![Build Status](https://travis-ci.org/mattermost/mattermost-docker.svg?branch=master)](https://travis-ci.org/mattermost/mattermost-docker)
-
 Notes:
 - The default Mattermost edition for this repo has changed from Team Edition to Enterprise Edition. Please see [Choose Edition](#choose-edition-to-install) section.
 - To install this Docker project on AWS Elastic Beanstalk please see [AWS Elastic Beanstalk Guide](contrib/aws/README.md).
@@ -80,7 +78,7 @@ If you want to push Mattermost application to **Cloud Foundry**, use a `manifest
 applications:
 - name: mattermost
   docker:
-    image: mattermost/mattermost-prod-app
+    image: uschti/mattermost-prod-app
   instances: 1
   memory: 1G
   disk_quota: 256M
