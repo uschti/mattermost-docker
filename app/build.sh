@@ -1,6 +1,6 @@
 #!/bin/bash
 
-version=5.26.1
+version=5.28.1
 edition=team
 tagName=uschti/mattermost-prod-app
 push=$1
