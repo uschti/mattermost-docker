@@ -5,7 +5,7 @@ edition=team
 tagName=uschti/mattermost-prod-app
 push=$1
 
-docker image build --build-arg MM_VERSION=${version} --build-arg edition=${edition} -t ${tagName} -t ${tagName}:${version} .
+docker image build --build-arg VERSION=${version} --build-arg edition=${edition} -t ${tagName} -t ${tagName}:${version} .
 
 if [[ -z "$push" || $push == true ]]
 then
